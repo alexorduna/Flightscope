@@ -1,0 +1,82 @@
+.airport-autocomplete {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.airport-autocomplete__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.airport-autocomplete__input {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  width: 100%;
+}
+
+.airport-autocomplete__input:hover {
+  border-color: var(--color-border-strong);
+}
+
+.airport-autocomplete__input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.airport-autocomplete__listbox {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: var(--space-2);
+  list-style: none;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.airport-autocomplete__option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.airport-autocomplete__option--highlighted {
+  background: var(--color-bg-panel-hover);
+  outline: 2px solid var(--color-cyan);
+  outline-offset: -2px;
+}
+
+.airport-autocomplete__code {
+  color: var(--color-cyan);
+  font-weight: 700;
+  min-width: 3ch;
+}
+
+.airport-autocomplete__country {
+  color: var(--color-text-muted);
+}
+
+.airport-autocomplete__error {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  margin: 0;
+}

@@ -1,0 +1,102 @@
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-panel);
+}
+
+.search-form__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  align-items: end;
+}
+
+@media (min-width: 860px) {
+  .search-form__row {
+    grid-template-columns: 1fr auto 1fr auto;
+  }
+}
+
+.search-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.search-form__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.search-form__date {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-primary);
+  color-scheme: dark;
+}
+
+.search-form__error {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.search-form__swap {
+  justify-self: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg);
+  color: var(--color-cyan);
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.search-form__swap:hover:not(:disabled) {
+  background: var(--color-bg-panel-hover);
+}
+
+.search-form__swap:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.search-form__submit {
+  align-self: flex-start;
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-amber);
+  color: #221600;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.search-form__submit:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.search-form__submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (max-width: 859px) {
+  .search-form__swap {
+    justify-self: flex-start;
+    transform: rotate(90deg);
+  }
+}

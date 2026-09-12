@@ -1,0 +1,58 @@
+/**
+ * FlightScope - "control tower" design system: a dark HUD-style aviation
+ * panel, with amber accents (navigation lights) and cyan (radar/HUD).
+ * Data (times, prices, IATA codes) uses monospaced typography to reinforce
+ * the feel of a technical instrument.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --color-bg: #0a1120;
+  --color-bg-elevated: #111b2e;
+  --color-bg-panel: #16223a;
+  --color-bg-panel-hover: #1c2a46;
+  --color-border: #2a3a57;
+  --color-border-strong: #3d5379;
+
+  /* Text */
+  --color-text-primary: #eef3fb;
+  --color-text-secondary: #a4b3d1;
+  --color-text-muted: #6d7fa3;
+
+  /* Accents */
+  --color-amber: #ffb020;
+  --color-amber-dim: #8a5f14;
+  --color-cyan: #35d7e8;
+  --color-cyan-dim: #1a5f68;
+  --color-success: #4ade80;
+  --color-success-bg: #12301f;
+  --color-warning: #ffb020;
+  --color-warning-bg: #362506;
+  --color-danger: #ff6b6b;
+  --color-danger-bg: #3a1616;
+
+  /* Focus / accessibility */
+  --color-focus-ring: #35d7e8;
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* Shape */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --shadow-panel: 0 4px 28px rgba(0, 0, 0, 0.4);
+
+  --max-content-width: 1180px;
+}
