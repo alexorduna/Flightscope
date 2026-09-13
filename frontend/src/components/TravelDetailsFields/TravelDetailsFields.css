@@ -1,0 +1,151 @@
+.travel-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.travel-details:not(.travel-details--embedded) {
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--separator);
+}
+
+.travel-details__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.travel-details__title {
+  font-size: var(--text-h3);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.travel-details__hint {
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+}
+
+.travel-details__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.travel-details__fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.travel-details__label {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.travel-details__segmented {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--bg);
+  border-radius: var(--radius-md);
+  gap: 2px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.travel-details__segment {
+  position: relative;
+  cursor: pointer;
+}
+
+.travel-details__segment input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.travel-details__segment span {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 var(--space-3);
+  border-radius: calc(var(--radius-md) - 3px);
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.travel-details__segment input:checked + span {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+.travel-details__input,
+.travel-details__select {
+  min-height: 44px;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  color: var(--text);
+  color-scheme: light dark;
+}
+
+.travel-details__passengers {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.travel-details__passenger-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.travel-details__passenger-label {
+  font-size: var(--text-body-sm);
+  color: var(--text);
+}
+
+.travel-details__stepper {
+  width: 4.5rem;
+  min-height: 44px;
+  text-align: center;
+  background: var(--bg);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+}
+
+.travel-details__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  font-size: var(--text-body-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.travel-details__checkbox input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--accent);
+}
+
+.travel-details__helper {
+  font-size: var(--text-caption);
+  color: var(--text-subtle);
+  line-height: 1.4;
+}
+
+.travel-details__error {
+  color: var(--danger);
+  font-size: var(--text-caption);
+}

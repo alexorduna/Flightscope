@@ -15,7 +15,7 @@ describe("StatusStates", () => {
     render(<ErrorState message="Something went wrong" onRetry={onRetry} />);
 
     expect(screen.getByRole("alert")).toHaveTextContent("Something went wrong");
-    await user.click(screen.getByRole("button", { name: /retry/i }));
+    await user.click(screen.getByRole("button", { name: /try again/i }));
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 

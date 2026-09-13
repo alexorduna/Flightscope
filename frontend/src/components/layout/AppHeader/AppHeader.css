@@ -1,0 +1,62 @@
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border-bottom: 1px solid var(--separator);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  padding-block: var(--space-3);
+}
+
+.app-header__brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.app-header__brand:hover .flightscope-logo__name {
+  color: var(--accent-link);
+}
+
+.app-header__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.app-header__scope {
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.app-header__course {
+  font-size: var(--text-caption);
+  color: var(--text-subtle);
+}
+
+@media (max-width: 639px) {
+  .app-header__course {
+    display: none;
+  }
+
+  .app-header__scope {
+    font-size: var(--text-caption);
+    color: var(--text-muted);
+  }
+}

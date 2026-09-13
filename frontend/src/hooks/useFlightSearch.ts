@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { fetchPriceInsights, searchFlights, ApiError } from "../api/client";
 import type { FlightSearchResponse, PriceInsightsResponse } from "../types/api";
+import type { TravelPreferences } from "../types/travelPreferences";
 
 export type SearchStatus = "idle" | "loading" | "success" | "error";
 
@@ -8,6 +9,7 @@ interface SearchQuery {
   origin: string;
   destination: string;
   date: string;
+  preferences: TravelPreferences;
 }
 
 interface UseFlightSearchResult {
@@ -40,7 +42,7 @@ export function useFlightSearch(): UseFlightSearchResult {
     setErrorMessage(null);
     setInsights(null);
 
-    searchFlights(query.origin, query.destination, query.date)
+    searchFlights(query.origin, query.destination, query.date, query.preferences)
       .then((response) => {
         if (requestId.current !== currentRequestId) return;
         setResult(response);
@@ -53,8 +55,6 @@ export function useFlightSearch(): UseFlightSearchResult {
         setErrorMessage(error instanceof ApiError ? error.message : "Couldn't complete the search. Please try again.");
       });
 
-    // The price trend is secondary information: if it fails, the section
-    // simply doesn't render, without affecting the main result.
     fetchPriceInsights(query.origin, query.destination, query.date)
       .then((response) => {
         if (requestId.current !== currentRequestId) return;

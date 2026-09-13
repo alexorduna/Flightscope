@@ -1,4 +1,5 @@
 import type { Itinerary } from "./flight";
+import type { SearchOptions } from "./searchOptions";
 
 /**
  * "live" -> the backend got the data from the real SerpApi call.
@@ -15,6 +16,8 @@ export interface FlightSearchResponse {
   itineraries: Itinerary[];
   source: DataSource;
   cached: boolean;
+  /** Echo of the travel options used for this search (shown in the UI). */
+  preferences: SearchOptions;
   /** Present only when SerpApi failed and the mock fallback was used; explains why. */
   warning?: string;
 }
@@ -30,6 +33,22 @@ export interface PriceInsightsResponse {
   currency: string;
   typicalPriceRange: { low: number; high: number };
   history: PricePoint[];
+  source: DataSource;
+  warning?: string;
+}
+
+export interface NearbyDatePrice {
+  date: string;
+  lowestPrice: number | null;
+}
+
+export interface NearbyPricesResponse {
+  origin: string;
+  destination: string;
+  centerDate: string;
+  windowDays: number;
+  currency: string;
+  prices: NearbyDatePrice[];
   source: DataSource;
   warning?: string;
 }

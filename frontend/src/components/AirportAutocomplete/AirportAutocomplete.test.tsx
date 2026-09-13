@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { AirportAutocomplete } from "./AirportAutocomplete";
 import type { Airport } from "../../types/airport";
 
@@ -51,5 +52,52 @@ describe("AirportAutocomplete", () => {
     await user.click(screen.getByLabelText("Destination"));
 
     expect(screen.queryByRole("option", { name: /Monterrey/ })).not.toBeInTheDocument();
+  });
+
+  it("clears a selected airport so the user can type a new one", async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [value, setValue] = useState<Airport | null>(AIRPORTS[0]);
+      return (
+        <AirportAutocomplete
+          label="Origin"
+          airports={AIRPORTS}
+          value={value}
+          onChange={setValue}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: /clear origin/i }));
+    expect(screen.getByRole("combobox", { name: "Origin" })).toHaveValue("");
+  });
+
+  it("selects all text on focus so typing overwrites the current airport", async () => {
+    const user = userEvent.setup();
+
+    function Harness() {
+      const [value, setValue] = useState<Airport | null>(AIRPORTS[0]);
+      return (
+        <AirportAutocomplete
+          label="Origin"
+          airports={AIRPORTS}
+          value={value}
+          onChange={setValue}
+        />
+      );
+    }
+
+    render(<Harness />);
+
+    const input = screen.getByRole("combobox", { name: "Origin" }) as HTMLInputElement;
+    await user.click(input);
+    expect(input.selectionStart).toBe(0);
+    expect(input.selectionEnd).toBe(input.value.length);
+
+    await user.keyboard("tij");
+    expect(input).toHaveValue("tij");
   });
 });

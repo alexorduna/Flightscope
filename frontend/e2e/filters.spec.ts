@@ -1,14 +1,20 @@
 import { test, expect } from "@playwright/test";
 
-test("filtering by 'Direct' reduces results to non-stop flights", async ({ page }) => {
-  await page.goto("/");
+async function completeSearchWizard(page: import("@playwright/test").Page) {
   await page.getByLabel("Origin", { exact: true }).fill("Monterrey");
   await page.getByRole("option", { name: /Monterrey/ }).click();
   await page.getByLabel("Destination", { exact: true }).fill("Tijuana");
   await page.getByRole("option", { name: /Tijuana/ }).click();
+  await page.getByRole("button", { name: /^continue$/i }).click();
+  await page.getByRole("button", { name: /^continue$/i }).click();
   await page.getByRole("button", { name: /search flights/i }).click();
+}
 
-  await expect(page.getByText(/results|result/)).toBeVisible();
+test("filtering by 'Direct' reduces results to non-stop flights", async ({ page }) => {
+  await page.goto("/");
+  await completeSearchWizard(page);
+
+  await expect(page.getByText(/\d+ flights?/)).toBeVisible();
   const countBefore = await page.locator(".flight-card").count();
 
   await page.getByLabel("Direct").check();
@@ -21,11 +27,7 @@ test("filtering by 'Direct' reduces results to non-stop flights", async ({ page 
 
 test("sorting by price descending changes the first result", async ({ page }) => {
   await page.goto("/");
-  await page.getByLabel("Origin", { exact: true }).fill("Monterrey");
-  await page.getByRole("option", { name: /Monterrey/ }).click();
-  await page.getByLabel("Destination", { exact: true }).fill("Tijuana");
-  await page.getByRole("option", { name: /Tijuana/ }).click();
-  await page.getByRole("button", { name: /search flights/i }).click();
+  await completeSearchWizard(page);
 
   await expect(page.locator(".flight-card").first()).toBeVisible();
   const cheapestFirstPrice = await page.locator(".flight-card__price").first().textContent();

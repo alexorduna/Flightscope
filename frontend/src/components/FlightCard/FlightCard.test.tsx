@@ -31,10 +31,39 @@ describe("FlightCard", () => {
     });
     render(<FlightCard itinerary={multiLeg} />);
 
-    const summary = screen.getByText(/view full itinerary/i);
+    const summary = screen.getByText(/itinerary details/i);
     expect(summary).toBeInTheDocument();
     await user.click(summary);
 
     expect(screen.getByText(/AM 1/)).toBeInTheDocument();
+  });
+
+  it("shows outbound and return legs for round-trip itineraries", () => {
+    render(
+      <FlightCard
+        itinerary={itinerary({
+          returnFlights: [
+            {
+              id: "FL-RT-1",
+              airline: "Volaris",
+              flightNumber: "Y4 2311",
+              departureAirportCode: "TIJ",
+              departureTime: "2026-10-08T08:10:00.000Z",
+              arrivalAirportCode: "MTY",
+              arrivalTime: "2026-10-08T11:45:00.000Z",
+              durationMinutes: 175,
+              aircraft: "Airbus A320",
+            },
+          ],
+          returnStops: 0,
+          returnDurationMinutes: 175,
+        })}
+        returnDate="2026-10-08"
+      />
+    );
+
+    expect(screen.getByText(/Outbound · Thu, Oct 1/i)).toBeInTheDocument();
+    expect(screen.getByText(/Return · Oct 8/i)).toBeInTheDocument();
+    expect(screen.getByText("round trip")).toBeInTheDocument();
   });
 });

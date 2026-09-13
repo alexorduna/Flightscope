@@ -2,6 +2,8 @@ import { Router } from "express";
 import { findAirport } from "../data/airports";
 import { searchFlights } from "../services/flightService";
 import { getPriceInsights } from "../services/priceInsightsService";
+import { getNearbyPrices } from "../services/nearbyPricesService";
+import { parseSearchOptions } from "../utils/parseSearchOptions";
 
 export const flightsRouter = Router();
 
@@ -36,21 +38,25 @@ function validateSearchParams(query: Record<string, unknown>): { ok: true; value
   return { ok: true, value: { origin, destination, date } };
 }
 
-/** GET /api/flights/search?origin=MTY&destination=TIJ&date=2026-10-01 */
+/** GET /api/flights/search?origin=MTY&destination=TIJ&date=2026-10-01&... */
 flightsRouter.get("/search", async (req, res) => {
   const validation = validateSearchParams(req.query as Record<string, unknown>);
   if (!validation.ok) {
     res.status(400).json({ error: validation.error });
     return;
   }
+
+  const optionsResult = parseSearchOptions(req.query as Record<string, unknown>, validation.value.date);
+  if (!optionsResult.ok) {
+    res.status(400).json({ error: optionsResult.error });
+    return;
+  }
+
   try {
     const { origin, destination, date } = validation.value;
-    const result = await searchFlights(origin, destination, date);
+    const result = await searchFlights(origin, destination, date, optionsResult.value);
     res.json(result);
   } catch (error) {
-    // Shouldn't happen (searchFlights already catches SerpApi failures and
-    // falls back to mock), but a defensive handler is left so the app never
-    // crashes on the unexpected.
     console.error("[flightsRouter] unexpected error in /search", error);
     res.status(500).json({ error: "Internal error while searching for flights." });
   }
@@ -70,5 +76,26 @@ flightsRouter.get("/price-insights", async (req, res) => {
   } catch (error) {
     console.error("[flightsRouter] unexpected error in /price-insights", error);
     res.status(500).json({ error: "Internal error while fetching the price trend." });
+  }
+});
+
+/** GET /api/flights/nearby-prices?origin=MTY&destination=TIJ&date=2026-10-01&window=3 */
+flightsRouter.get("/nearby-prices", async (req, res) => {
+  const validation = validateSearchParams(req.query as Record<string, unknown>);
+  if (!validation.ok) {
+    res.status(400).json({ error: validation.error });
+    return;
+  }
+
+  const rawWindow = typeof req.query.window === "string" ? Number.parseInt(req.query.window, 10) : 3;
+  const windowDays = Number.isFinite(rawWindow) ? rawWindow : 3;
+
+  try {
+    const { origin, destination, date } = validation.value;
+    const result = await getNearbyPrices(origin, destination, date, windowDays);
+    res.json(result);
+  } catch (error) {
+    console.error("[flightsRouter] unexpected error in /nearby-prices", error);
+    res.status(500).json({ error: "Internal error while fetching nearby prices." });
   }
 });

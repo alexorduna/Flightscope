@@ -1,5 +1,6 @@
 import type { Flight, Itinerary } from "../types/flight";
 import type { PricePoint } from "../types/api";
+import type { SearchOptions } from "../types/searchOptions";
 
 /**
  * Mock data generator. This file is the fallback that guarantees the app
@@ -227,11 +228,48 @@ function genericRoute(origin: string, destination: string, date: string): Itiner
   return specs;
 }
 
-export function getMockItineraries(origin: string, destination: string, date: string): Itinerary[] {
+export function getMockItineraries(
+  origin: string,
+  destination: string,
+  date: string,
+  options?: Pick<SearchOptions, "tripType" | "returnDate">
+): Itinerary[] {
   const key = `${origin.toUpperCase()}-${destination.toUpperCase()}`;
   const builder = ROUTES[key];
   const specs = builder ? builder() : genericRoute(origin.toUpperCase(), destination.toUpperCase(), date);
-  return specs.map((spec, i) => buildItinerary(date, `${key}-${date}-${i}`, spec));
+  const outbound = specs.map((spec, i) => buildItinerary(date, `${key}-${date}-${i}`, spec));
+
+  if (options?.tripType !== "round-trip" || !options.returnDate) {
+    return outbound;
+  }
+
+  return attachMockReturnLegs(outbound, origin, destination, options.returnDate);
+}
+
+function attachMockReturnLegs(
+  outbound: Itinerary[],
+  origin: string,
+  destination: string,
+  returnDate: string
+): Itinerary[] {
+  const returnOptions = getMockItineraries(destination, origin, returnDate);
+
+  return outbound.map((itinerary, index) => {
+    const returnOption = returnOptions[index % returnOptions.length];
+    const returnFare = returnOption.totalPrice;
+    const roundTripDiscount = Math.round(returnFare * 0.08);
+
+    return {
+      ...itinerary,
+      returnFlights: returnOption.flights.map((flight) => ({
+        ...flight,
+        id: `${flight.id}-rt`,
+      })),
+      returnStops: returnOption.stops,
+      returnDurationMinutes: returnOption.totalDurationMinutes,
+      totalPrice: itinerary.totalPrice + returnFare - roundTripDiscount,
+    };
+  });
 }
 
 export function getMockPriceHistory(origin: string, destination: string, date: string): PricePoint[] {
@@ -249,4 +287,51 @@ export function getMockPriceHistory(origin: string, destination: string, date: s
     history.push({ date: pointDate, price: Math.max(price, Math.round(cheapest * 0.6)) });
   }
   return history;
+}
+
+function addDaysIso(date: string, days: number): string {
+  const base = new Date(`${date}T00:00:00.000Z`);
+  base.setUTCDate(base.getUTCDate() + days);
+  return base.toISOString().slice(0, 10);
+}
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Lowest mock fare for each day in a +/- window — mimics Google Flights' date strip. */
+export function getMockNearbyPrices(
+  origin: string,
+  destination: string,
+  centerDate: string,
+  windowDays: number
+): Array<{ date: string; lowestPrice: number | null }> {
+  const prices: Array<{ date: string; lowestPrice: number | null }> = [];
+  const today = todayIso();
+
+  for (let offset = -windowDays; offset <= windowDays; offset++) {
+    const date = addDaysIso(centerDate, offset);
+    if (date < today) {
+      prices.push({ date, lowestPrice: null });
+      continue;
+    }
+
+    const itineraries = getMockItineraries(origin, destination, date);
+    if (itineraries.length === 0) {
+      prices.push({ date, lowestPrice: null });
+      continue;
+    }
+
+    const cheapest = Math.min(...itineraries.map((it) => it.totalPrice));
+    const rng = seededRandom(hashString(`nearby-${origin}-${destination}-${date}`));
+    const dayOfWeek = new Date(`${date}T00:00:00.000Z`).getUTCDay();
+    const weekendBump = dayOfWeek === 0 || dayOfWeek === 6 ? 1.08 : 1;
+    const offsetDrift = 1 + Math.abs(offset) * 0.025 + (rng() - 0.5) * 0.12;
+    prices.push({
+      date,
+      lowestPrice: Math.round(cheapest * weekendBump * offsetDrift),
+    });
+  }
+
+  return prices;
 }

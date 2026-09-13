@@ -1,4 +1,5 @@
 import type { Itinerary } from "../types/flight";
+import { itineraryAirlines } from "./itinerary";
 
 export type SortKey = "price" | "duration" | "stops";
 export type SortDirection = "asc" | "desc";
@@ -24,7 +25,9 @@ export function filterItineraries(itineraries: Itinerary[], filters: ItineraryFi
   return itineraries.filter((itinerary) => {
     if (filters.maxStops !== null && itinerary.stops > filters.maxStops) return false;
     if (filters.maxPrice !== null && itinerary.totalPrice > filters.maxPrice) return false;
-    if (filters.airlines.length > 0 && !itinerary.flights.some((f) => filters.airlines.includes(f.airline))) return false;
+    if (filters.airlines.length > 0 && !itineraryAirlines(itinerary).some((airline) => filters.airlines.includes(airline))) {
+      return false;
+    }
     return true;
   });
 }
@@ -48,8 +51,8 @@ export function sortItineraries(itineraries: Itinerary[], sort: SortOption): Iti
 export function getAvailableAirlines(itineraries: Itinerary[]): string[] {
   const airlines = new Set<string>();
   for (const itinerary of itineraries) {
-    for (const flight of itinerary.flights) {
-      airlines.add(flight.airline);
+    for (const airline of itineraryAirlines(itinerary)) {
+      airlines.add(airline);
     }
   }
   return Array.from(airlines).sort((a, b) => a.localeCompare(b));

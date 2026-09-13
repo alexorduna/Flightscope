@@ -1,59 +1,100 @@
 import type { Itinerary } from "../../types/flight";
-import { formatCurrency, formatDuration, formatTime, stopsLabel } from "../../utils/formatters";
+import { ChevronDown } from "lucide-react";
+import { hasReturnLeg } from "../../utils/itinerary";
+import { formatCurrency, formatTime } from "../../utils/formatters";
+import { formatShortDate } from "../../utils/dates";
+import { FlightLegSchedule } from "../FlightLegSchedule/FlightLegSchedule";
 import "./FlightCard.css";
+import "../FlightLegSchedule/FlightLegSchedule.css";
 
 interface FlightCardProps {
   itinerary: Itinerary;
+  returnDate?: string | null;
 }
 
-export function FlightCard({ itinerary }: FlightCardProps) {
-  const first = itinerary.flights[0];
-  const last = itinerary.flights[itinerary.flights.length - 1];
+function formatLegDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+export function FlightCard({ itinerary, returnDate }: FlightCardProps) {
+  const roundTrip = hasReturnLeg(itinerary);
+  const outboundDate = formatLegDate(itinerary.flights[0].departureTime);
+  const returnLegDate =
+    (returnDate ? formatShortDate(returnDate) : null) ??
+    (itinerary.returnFlights?.[0]?.departureTime
+      ? formatLegDate(itinerary.returnFlights[0].departureTime)
+      : "Return");
+
+  const detailFlights = roundTrip
+    ? [...itinerary.flights, ...(itinerary.returnFlights ?? [])]
+    : itinerary.flights;
+  const showDetails = detailFlights.length > 1;
 
   return (
     <li className="flight-card">
-      <div className="flight-card__summary">
-        <div className="flight-card__route">
-          <span className="mono flight-card__time">{formatTime(first.departureTime)}</span>
-          <span className="flight-card__airport">{first.departureAirportCode}</span>
-          <span className="flight-card__path" aria-hidden="true">
-            <span className="flight-card__line" />
-            <span className="flight-card__plane">✈</span>
-            <span className="flight-card__line" />
-          </span>
-          <span className="flight-card__airport">{last.arrivalAirportCode}</span>
-          <span className="mono flight-card__time">{formatTime(last.arrivalTime)}</span>
+      <div className="flight-card__main">
+        <div className="flight-card__legs-stack">
+          <FlightLegSchedule
+            label={`Outbound · ${outboundDate}`}
+            flights={itinerary.flights}
+            stops={itinerary.stops}
+            durationMinutes={itinerary.totalDurationMinutes}
+          />
+
+          {roundTrip && itinerary.returnFlights && itinerary.returnDurationMinutes != null && (
+            <FlightLegSchedule
+              label={`Return · ${returnLegDate}`}
+              flights={itinerary.returnFlights}
+              stops={itinerary.returnStops ?? 0}
+              durationMinutes={itinerary.returnDurationMinutes}
+            />
+          )}
         </div>
 
-        <div className="flight-card__meta">
-          <span className={`flight-card__stops flight-card__stops--${itinerary.stops === 0 ? "direct" : "connecting"}`}>
-            {stopsLabel(itinerary.stops)}
-          </span>
-          <span className="flight-card__duration mono">{formatDuration(itinerary.totalDurationMinutes)}</span>
-          <span className="flight-card__airline">{first.airline}</span>
-        </div>
-
-        <div className="flight-card__price-block">
-          <span className="mono flight-card__price">{formatCurrency(itinerary.totalPrice, itinerary.currency)}</span>
-          <span className="flight-card__price-label">per person</span>
+        <div className="flight-card__fare">
+          <span className="flight-card__price mono">{formatCurrency(itinerary.totalPrice, itinerary.currency)}</span>
+          <span className="flight-card__price-label">{roundTrip ? "round trip" : "per person"}</span>
         </div>
       </div>
 
-      {itinerary.flights.length > 1 && (
+      {showDetails && (
         <details className="flight-card__details">
-          <summary>View full itinerary ({itinerary.flights.length} flights)</summary>
+          <summary>
+            <span>{roundTrip ? "Full round-trip details" : "Itinerary details"}</span>
+            <ChevronDown size={16} className="flight-card__chevron" aria-hidden="true" />
+          </summary>
           <ol className="flight-card__legs">
             {itinerary.flights.map((flight) => (
               <li key={flight.id} className="flight-card__leg">
+                <span className="flight-card__leg-tag">Outbound</span>
                 <span className="mono">{formatTime(flight.departureTime)}</span>
-                <span>
+                <span className="flight-card__leg-route">
                   {flight.departureAirportCode} → {flight.arrivalAirportCode}
                 </span>
                 <span className="mono">{formatTime(flight.arrivalTime)}</span>
-                <span>
+                <span className="flight-card__leg-flight">
                   {flight.airline} {flight.flightNumber}
                 </span>
-                <span>{flight.aircraft}</span>
+                <span className="flight-card__leg-aircraft">{flight.aircraft}</span>
+              </li>
+            ))}
+            {(itinerary.returnFlights ?? []).map((flight) => (
+              <li key={flight.id} className="flight-card__leg">
+                <span className="flight-card__leg-tag flight-card__leg-tag--return">Return</span>
+                <span className="mono">{formatTime(flight.departureTime)}</span>
+                <span className="flight-card__leg-route">
+                  {flight.departureAirportCode} → {flight.arrivalAirportCode}
+                </span>
+                <span className="mono">{formatTime(flight.arrivalTime)}</span>
+                <span className="flight-card__leg-flight">
+                  {flight.airline} {flight.flightNumber}
+                </span>
+                <span className="flight-card__leg-aircraft">{flight.aircraft}</span>
               </li>
             ))}
           </ol>

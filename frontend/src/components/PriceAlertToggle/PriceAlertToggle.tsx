@@ -1,5 +1,8 @@
 import { useId, useState } from "react";
+import { Bell, X } from "lucide-react";
 import type { PriceAlert } from "../../types/priceAlert";
+import { Button } from "../ui/Button";
+import { Switch } from "../ui/Switch";
 import { formatCurrency } from "../../utils/formatters";
 import "./PriceAlertToggle.css";
 
@@ -12,11 +15,6 @@ interface PriceAlertToggleProps {
   onRemove: () => void;
 }
 
-/**
- * UI simulation: the alert only lives in the parent's React state (see
- * hooks/usePriceAlerts.ts). No real notifications are sent and nothing is
- * persisted anywhere - it's lost on page refresh.
- */
 export function PriceAlertToggle({ alert, defaultTargetPrice, currency, onCreate, onToggleActive, onRemove }: PriceAlertToggleProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [draftPrice, setDraftPrice] = useState(defaultTargetPrice);
@@ -25,58 +23,55 @@ export function PriceAlertToggle({ alert, defaultTargetPrice, currency, onCreate
   if (isEditing) {
     return (
       <form
-        className="price-alert-toggle price-alert-toggle--editing"
+        className="price-alert price-alert--editing"
         onSubmit={(e) => {
           e.preventDefault();
           onCreate(draftPrice);
           setIsEditing(false);
         }}
       >
-        <label htmlFor={inputId}>Notify me if it drops below</label>
-        <input
-          id={inputId}
-          type="number"
-          className="mono"
-          min={0}
-          step={50}
-          value={draftPrice}
-          onChange={(e) => setDraftPrice(Number(e.target.value))}
-        />
-        <button type="submit" className="price-alert-toggle__save">
-          Save
-        </button>
-        <button type="button" className="price-alert-toggle__cancel" onClick={() => setIsEditing(false)}>
-          Cancel
-        </button>
+        <label className="price-alert__label" htmlFor={inputId}>
+          Notify when price drops below
+        </label>
+        <div className="price-alert__row">
+          <input
+            id={inputId}
+            type="number"
+            className="price-alert__input mono"
+            min={0}
+            step={50}
+            value={draftPrice}
+            onChange={(e) => setDraftPrice(Number(e.target.value))}
+          />
+          <Button type="submit" variant="secondary">
+            Save
+          </Button>
+          <Button type="button" variant="ghost" onClick={() => setIsEditing(false)}>
+            Cancel
+          </Button>
+        </div>
       </form>
     );
   }
 
   if (!alert) {
     return (
-      <button type="button" className="price-alert-toggle price-alert-toggle__create" onClick={() => setIsEditing(true)}>
-        <span aria-hidden="true">🔔</span> Create price alert
-      </button>
+      <Button type="button" variant="secondary" className="price-alert__create" onClick={() => setIsEditing(true)}>
+        <Bell size={16} strokeWidth={2} aria-hidden="true" />
+        Price alert
+      </Button>
     );
   }
 
+  const switchLabel = alert.active
+    ? `Active — notify below ${formatCurrency(alert.targetPrice, currency)}`
+    : `Paused — notify below ${formatCurrency(alert.targetPrice, currency)}`;
+
   return (
-    <div className="price-alert-toggle price-alert-toggle--active">
-      <button
-        type="button"
-        className="price-alert-toggle__switch"
-        role="switch"
-        aria-checked={alert.active}
-        onClick={onToggleActive}
-      >
-        <span className="price-alert-toggle__switch-track" aria-hidden="true" />
-        <span>
-          {alert.active ? "Alert active" : "Alert paused"}: notify me if it drops below{" "}
-          <strong className="mono">{formatCurrency(alert.targetPrice, currency)}</strong>
-        </span>
-      </button>
-      <button type="button" className="price-alert-toggle__remove" onClick={onRemove} aria-label="Remove price alert">
-        ✕
+    <div className="price-alert price-alert--active">
+      <Switch checked={alert.active} onChange={onToggleActive} label={switchLabel} />
+      <button type="button" className="price-alert__remove" onClick={onRemove} aria-label="Remove price alert">
+        <X size={18} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>
   );

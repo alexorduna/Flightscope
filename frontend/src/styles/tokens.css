@@ -1,45 +1,56 @@
 /**
- * FlightScope - "control tower" design system: a dark HUD-style aviation
- * panel, with amber accents (navigation lights) and cyan (radar/HUD).
- * Data (times, prices, IATA codes) uses monospaced typography to reinforce
- * the feel of a technical instrument.
+ * FlightScope — editorial departure-board design tokens.
+ * See DESIGN_SYSTEM.md at repo root.
  */
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
   /* Surfaces */
-  --color-bg: #0a1120;
-  --color-bg-elevated: #111b2e;
-  --color-bg-panel: #16223a;
-  --color-bg-panel-hover: #1c2a46;
-  --color-border: #2a3a57;
-  --color-border-strong: #3d5379;
+  --bg: #f4f1ec;
+  --surface: #ffffff;
+  --surface-muted: #ebe7e0;
+  --surface-hover: #f9f7f4;
 
   /* Text */
-  --color-text-primary: #eef3fb;
-  --color-text-secondary: #a4b3d1;
-  --color-text-muted: #6d7fa3;
+  --text: #1c1b19;
+  --text-muted: #5c5852;
+  --text-subtle: #8a847a;
+  --text-inverse: #f4f1ec;
 
   /* Accents */
-  --color-amber: #ffb020;
-  --color-amber-dim: #8a5f14;
-  --color-cyan: #35d7e8;
-  --color-cyan-dim: #1a5f68;
-  --color-success: #4ade80;
-  --color-success-bg: #12301f;
-  --color-warning: #ffb020;
-  --color-warning-bg: #362506;
-  --color-danger: #ff6b6b;
-  --color-danger-bg: #3a1616;
+  --accent: #1c1b19;
+  --accent-hover: #33312d;
+  --accent-price: #8f5e2c;
+  --accent-link: #0b5f63;
+  --accent-focus: #0b5f63;
 
-  /* Focus / accessibility */
-  --color-focus-ring: #35d7e8;
+  /* Semantic */
+  --success: #2d6a4f;
+  --success-bg: #e8f2ec;
+  --warning: #b45309;
+  --warning-bg: #fef3e2;
+  --danger: #b91c1c;
+  --danger-bg: #fce8e8;
+
+  /* Structure */
+  --separator: rgba(28, 27, 25, 0.1);
+  --shadow-sm: 0 1px 2px rgba(28, 27, 25, 0.05), 0 1px 3px rgba(28, 27, 25, 0.04);
+  --shadow-md: 0 4px 16px rgba(28, 27, 25, 0.07), 0 1px 3px rgba(28, 27, 25, 0.04);
+  --shadow-lg: 0 12px 32px rgba(28, 27, 25, 0.1);
 
   /* Typography */
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  /* Spacing */
+  --text-display: clamp(1.75rem, 3.5vw, 2.25rem);
+  --text-h2: 1.375rem;
+  --text-h3: 1.0625rem;
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.8125rem;
+  --text-mono-data: 0.9375rem;
+
+  /* Spacing (8px grid) */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -47,12 +58,78 @@
   --space-5: 1.5rem;
   --space-6: 2rem;
   --space-7: 3rem;
+  --space-8: 4rem;
 
-  /* Shape */
+  /* Radius */
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 18px;
-  --shadow-panel: 0 4px 28px rgba(0, 0, 0, 0.4);
+  --radius-lg: 14px;
+  --radius-full: 9999px;
 
-  --max-content-width: 1180px;
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+
+  --max-content-width: 1360px;
+  --page-padding: clamp(1rem, 3vw, 2.5rem);
+  --layout-sidebar-width: clamp(280px, 28vw, 360px);
+  --header-height: 64px;
+
+  /* Legacy aliases (keep e2e + gradual migration) */
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--surface-muted);
+  --color-bg-panel: var(--surface);
+  --color-bg-panel-hover: var(--surface-hover);
+  --color-border: var(--separator);
+  --color-border-strong: rgba(28, 27, 25, 0.18);
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-muted);
+  --color-text-muted: var(--text-subtle);
+  --color-focus-ring: var(--accent-focus);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warning: var(--warning);
+  --color-warning-bg: var(--warning-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-amber: var(--accent-price);
+  --color-cyan: var(--accent-link);
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-mono);
+  --shadow-panel: var(--shadow-md);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg: #121110;
+    --surface: #1e1d1b;
+    --surface-muted: #282725;
+    --surface-hover: #32312e;
+
+    --text: #f4f1ec;
+    --text-muted: #b8b2a8;
+    --text-subtle: #8a847a;
+    --text-inverse: #1c1b19;
+
+    --accent: #f4f1ec;
+    --accent-hover: #ffffff;
+    --accent-price: #c49a6c;
+    --accent-link: #3d9ea3;
+    --accent-focus: #3d9ea3;
+
+    --success: #6ee7a8;
+    --success-bg: rgba(45, 106, 79, 0.2);
+    --warning: #fbbf24;
+    --warning-bg: rgba(180, 83, 9, 0.18);
+    --danger: #f87171;
+    --danger-bg: rgba(185, 28, 28, 0.16);
+
+    --separator: rgba(244, 241, 236, 0.1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
+  }
 }

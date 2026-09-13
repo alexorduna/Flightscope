@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SearchForm } from "./SearchForm";
 import type { Airport } from "../../types/airport";
@@ -10,29 +10,36 @@ const AIRPORTS: Airport[] = [
 ];
 
 async function pickAirport(user: ReturnType<typeof userEvent.setup>, label: string, query: string) {
-  const input = screen.getByLabelText(label);
+  const input = screen.getByLabelText(label, { exact: true });
   await user.type(input, query);
-  await user.click(await screen.findByRole("option"));
+  const listbox = await screen.findByRole("listbox", { name: `${label} suggestions` });
+  await user.click(within(listbox).getByRole("option"));
+}
+
+async function completeWizardToSearch(user: ReturnType<typeof userEvent.setup>) {
+  await pickAirport(user, "Origin", "mon");
+  await pickAirport(user, "Destination", "tij");
+  await user.click(screen.getByRole("button", { name: /^continue$/i }));
+  await user.click(screen.getByRole("button", { name: /^continue$/i }));
 }
 
 describe("SearchForm", () => {
-  it("shows validation errors when submitted empty", async () => {
+  it("shows validation errors on the route step", async () => {
     const user = userEvent.setup();
     render(<SearchForm airports={AIRPORTS} isLoading={false} onSearch={vi.fn()} />);
 
-    await user.click(screen.getByRole("button", { name: /search flights/i }));
+    await user.click(screen.getByRole("button", { name: /^continue$/i }));
 
     expect(await screen.findByText(/choose an origin airport/i)).toBeInTheDocument();
     expect(screen.getByText(/choose a destination airport/i)).toBeInTheDocument();
   });
 
-  it("calls onSearch with the chosen values", async () => {
+  it("calls onSearch after completing all wizard steps", async () => {
     const user = userEvent.setup();
     const onSearch = vi.fn();
     render(<SearchForm airports={AIRPORTS} isLoading={false} onSearch={onSearch} />);
 
-    await pickAirport(user, "Origin", "mon");
-    await pickAirport(user, "Destination", "tij");
+    await completeWizardToSearch(user);
     await user.click(screen.getByRole("button", { name: /search flights/i }));
 
     expect(onSearch).toHaveBeenCalledWith(
@@ -43,8 +50,11 @@ describe("SearchForm", () => {
     );
   });
 
-  it("disables the search button while isLoading is true", () => {
+  it("disables the search button while isLoading is true", async () => {
+    const user = userEvent.setup();
     render(<SearchForm airports={AIRPORTS} isLoading={true} onSearch={vi.fn()} />);
+
+    await completeWizardToSearch(user);
     expect(screen.getByRole("button", { name: /searching/i })).toBeDisabled();
   });
 });

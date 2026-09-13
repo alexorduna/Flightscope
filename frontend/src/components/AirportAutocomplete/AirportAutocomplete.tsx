@@ -1,5 +1,6 @@
-import { useId, useMemo, useRef, useState } from "react";
-import type { KeyboardEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import type { FocusEvent, KeyboardEvent } from "react";
+import { X } from "lucide-react";
 import type { Airport } from "../../types/airport";
 import "./AirportAutocomplete.css";
 
@@ -51,6 +52,12 @@ export function AirportAutocomplete({
   const errorId = `${baseId}-error`;
   const optionId = (index: number) => `${baseId}-option-${index}`;
 
+  useEffect(() => {
+    if (value) {
+      setInputValue(airportLabel(value));
+    }
+  }, [value]);
+
   const filteredAirports = useMemo(() => {
     const candidates = excludeCode ? airports.filter((a) => a.iataCode !== excludeCode) : airports;
     return candidates.filter((a) => matchesQuery(a, inputValue)).slice(0, 8);
@@ -63,10 +70,36 @@ export function AirportAutocomplete({
     if (value) onChange(null);
   }
 
+  function clearSelection() {
+    onChange(null);
+    setInputValue("");
+    setIsOpen(true);
+    setHighlightedIndex(0);
+    inputRef.current?.focus();
+  }
+
   function selectAirport(airport: Airport) {
     onChange(airport);
     setInputValue(airportLabel(airport));
     setIsOpen(false);
+  }
+
+  function handleFocus(event: FocusEvent<HTMLInputElement>) {
+    setIsOpen(true);
+    if (event.currentTarget.value) {
+      event.currentTarget.select();
+    }
+  }
+
+  function handleBlur() {
+    window.setTimeout(() => {
+      setIsOpen(false);
+      if (value) {
+        setInputValue(airportLabel(value));
+        return;
+      }
+      setInputValue("");
+    }, 100);
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
@@ -104,32 +137,41 @@ export function AirportAutocomplete({
       <label className="airport-autocomplete__label" htmlFor={baseId}>
         {label}
       </label>
-      <input
-        ref={inputRef}
-        id={baseId}
-        type="text"
-        role="combobox"
-        aria-expanded={showListbox}
-        aria-controls={listboxId}
-        aria-autocomplete="list"
-        aria-activedescendant={showListbox ? optionId(highlightedIndex) : undefined}
-        aria-invalid={Boolean(errorMessage)}
-        aria-describedby={errorMessage ? errorId : undefined}
-        className="airport-autocomplete__input mono"
-        autoComplete="off"
-        placeholder={placeholder}
-        value={inputValue}
-        onChange={(e) => openWithQuery(e.target.value)}
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => {
-          // Delayed to let a click on an option (onMouseDown) register first.
-          window.setTimeout(() => setIsOpen(false), 100);
-          if (!value) setInputValue("");
-        }}
-        onKeyDown={handleKeyDown}
-      />
+      <div className="airport-autocomplete__control">
+        <input
+          ref={inputRef}
+          id={baseId}
+          type="text"
+          role="combobox"
+          aria-expanded={showListbox}
+          aria-controls={listboxId}
+          aria-autocomplete="list"
+          aria-activedescendant={showListbox ? optionId(highlightedIndex) : undefined}
+          aria-invalid={Boolean(errorMessage)}
+          aria-describedby={errorMessage ? errorId : undefined}
+          className="airport-autocomplete__input mono"
+          autoComplete="off"
+          placeholder={placeholder}
+          value={inputValue}
+          onChange={(e) => openWithQuery(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+        />
+        {(value || inputValue.trim()) && (
+          <button
+            type="button"
+            className="airport-autocomplete__clear"
+            aria-label={`Clear ${label.toLowerCase()}`}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={clearSelection}
+          >
+            <X size={16} strokeWidth={2} aria-hidden="true" />
+          </button>
+        )}
+      </div>
       {showListbox && (
-        <ul className="airport-autocomplete__listbox" id={listboxId} role="listbox" aria-label={label}>
+        <ul className="airport-autocomplete__listbox" id={listboxId} role="listbox" aria-label={`${label} suggestions`}>
           {filteredAirports.map((airport, index) => (
             <li
               key={airport.iataCode}

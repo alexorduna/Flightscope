@@ -1,0 +1,89 @@
+.nearby-prices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.nearby-prices__label {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.nearby-prices__strip {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nearby-prices__day {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.nearby-prices__day:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background: var(--surface-hover);
+}
+
+.nearby-prices__day:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.nearby-prices__day--selected {
+  border-color: var(--accent-link);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.nearby-prices__day--cheapest:not(.nearby-prices__day--selected) {
+  border-color: rgba(45, 106, 79, 0.35);
+  background: var(--success-bg);
+}
+
+.nearby-prices__weekday {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.nearby-prices__date {
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+}
+
+.nearby-prices__price {
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--accent-price);
+}
+
+.nearby-prices__price--muted {
+  color: var(--text-subtle);
+  font-weight: 500;
+}
+
+.nearby-prices__status,
+.nearby-prices__hint {
+  font-size: var(--text-caption);
+  color: var(--text-subtle);
+}

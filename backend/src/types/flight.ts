@@ -22,9 +22,14 @@ export interface Flight {
  */
 export interface Itinerary {
   id: string;
+  /** Outbound leg (departure → destination). */
   flights: Flight[];
   stops: number;
   totalPrice: number;
   currency: string;
   totalDurationMinutes: number;
+  /** Return leg when the search is round-trip. */
+  returnFlights?: Flight[];
+  returnStops?: number;
+  returnDurationMinutes?: number;
 }

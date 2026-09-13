@@ -1,5 +1,6 @@
 import type { Flight, Itinerary } from "../types/flight";
 import type { PricePoint } from "../types/api";
+import type { SearchOptions } from "../types/searchOptions";
 
 /**
  * Integration with SerpApi (the "google_flights" engine -
@@ -67,6 +68,7 @@ interface SerpApiItinerary {
   total_duration: number;
   price: number;
   carbon_emissions?: { this_flight?: number };
+  departure_token?: string;
 }
 
 interface SerpApiSearchResponse {
@@ -162,12 +164,111 @@ function mapToItinerary(raw: SerpApiItinerary, idSuffix: string): Itinerary {
   };
 }
 
-export async function searchFlightsViaSerpApi(origin: string, destination: string, date: string): Promise<Itinerary[]> {
+function mapRawToReturnLeg(raw: SerpApiItinerary, idSuffix: string): Pick<Itinerary, "returnFlights" | "returnStops" | "returnDurationMinutes"> {
+  const returnFlights = raw.flights.map((segment, i) => mapSegmentToFlight(segment, `${idSuffix}-ret-${i}`));
+  return {
+    returnFlights,
+    returnStops: returnFlights.length - 1,
+    returnDurationMinutes: raw.total_duration,
+  };
+}
+
+async function fetchReturnLegViaSerpApi(
+  origin: string,
+  destination: string,
+  outboundDate: string,
+  returnDate: string,
+  options: SearchOptions,
+  departureToken: string,
+  idSuffix: string
+): Promise<Pick<Itinerary, "returnFlights" | "returnStops" | "returnDurationMinutes"> | null> {
+  const travelClassMap: Record<SearchOptions["cabinClass"], string> = {
+    economy: "1",
+    premium_economy: "2",
+    business: "3",
+    first: "4",
+  };
+
+  const body = await callSerpApi({
+    departure_id: origin.toUpperCase(),
+    arrival_id: destination.toUpperCase(),
+    outbound_date: outboundDate,
+    return_date: returnDate,
+    type: "1",
+    departure_token: departureToken,
+    travel_class: travelClassMap[options.cabinClass],
+    adults: String(options.passengers.adults),
+    children: String(options.passengers.children),
+    infants_on_lap: String(options.passengers.infants),
+  });
+
+  const candidate = [...(body.best_flights ?? []), ...(body.other_flights ?? [])].find(
+    (itinerary) => itinerary.flights.length > 0
+  );
+  if (!candidate) return null;
+
+  return mapRawToReturnLeg(candidate, idSuffix);
+}
+
+async function attachReturnLegsViaSerpApi(
+  origin: string,
+  destination: string,
+  outboundDate: string,
+  options: SearchOptions,
+  entries: Array<{ itinerary: Itinerary; departureToken?: string }>
+): Promise<Itinerary[]> {
+  if (options.tripType !== "round-trip" || !options.returnDate) {
+    return entries.map((entry) => entry.itinerary);
+  }
+
+  const limited = entries.slice(0, 8);
+  const enriched = await Promise.all(
+    limited.map(async (entry, index) => {
+      if (!entry.departureToken) return entry.itinerary;
+
+      try {
+        const returnLeg = await fetchReturnLegViaSerpApi(
+          origin,
+          destination,
+          outboundDate,
+          options.returnDate as string,
+          options,
+          entry.departureToken,
+          `${entry.itinerary.id}-${index}`
+        );
+        return returnLeg ? { ...entry.itinerary, ...returnLeg } : entry.itinerary;
+      } catch {
+        return entry.itinerary;
+      }
+    })
+  );
+
+  return [...enriched, ...entries.slice(8).map((entry) => entry.itinerary)];
+}
+
+export async function searchFlightsViaSerpApi(
+  origin: string,
+  destination: string,
+  date: string,
+  options: SearchOptions
+): Promise<Itinerary[]> {
+  const travelClassMap: Record<SearchOptions["cabinClass"], string> = {
+    economy: "1",
+    premium_economy: "2",
+    business: "3",
+    first: "4",
+  };
+
   const body = await callSerpApi({
     departure_id: origin.toUpperCase(),
     arrival_id: destination.toUpperCase(),
     outbound_date: date,
-    type: "2", // one-way
+    type: options.tripType === "round-trip" ? "1" : "2",
+    ...(options.returnDate ? { return_date: options.returnDate } : {}),
+    travel_class: travelClassMap[options.cabinClass],
+    adults: String(options.passengers.adults),
+    children: String(options.passengers.children),
+    infants_on_lap: String(options.passengers.infants),
   });
 
   const all = [...(body.best_flights ?? []), ...(body.other_flights ?? [])];
@@ -186,7 +287,37 @@ export async function searchFlightsViaSerpApi(origin: string, destination: strin
     throw new SerpApiUnexpectedResponseError("The response did not include any flights with a valid price");
   }
 
-  return raw.map((itinerary, i) => mapToItinerary(itinerary, `${origin}-${destination}-${date}-${i}`));
+  const entries = raw.map((itinerary, i) => ({
+    itinerary: mapToItinerary(itinerary, `${origin}-${destination}-${date}-${i}`),
+    departureToken: itinerary.departure_token,
+  }));
+
+  return attachReturnLegsViaSerpApi(origin, destination, date, options, entries);
+}
+
+/** Lightweight lookup used by the nearby-date price strip (Google Flights-style). */
+export async function fetchLowestPriceForDateViaSerpApi(
+  origin: string,
+  destination: string,
+  date: string
+): Promise<number | null> {
+  const body = await callSerpApi({
+    departure_id: origin.toUpperCase(),
+    arrival_id: destination.toUpperCase(),
+    outbound_date: date,
+    type: "2",
+  });
+
+  if (typeof body.price_insights?.lowest_price === "number" && Number.isFinite(body.price_insights.lowest_price)) {
+    return body.price_insights.lowest_price;
+  }
+
+  const all = [...(body.best_flights ?? []), ...(body.other_flights ?? [])];
+  const prices = all
+    .map((itinerary) => itinerary.price)
+    .filter((price): price is number => typeof price === "number" && Number.isFinite(price));
+
+  return prices.length > 0 ? Math.min(...prices) : null;
 }
 
 export async function fetchPriceInsightsViaSerpApi(

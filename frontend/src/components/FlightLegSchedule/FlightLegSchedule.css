@@ -1,0 +1,128 @@
+.flight-leg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.flight-leg__label {
+  font-size: var(--text-caption);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.flight-leg__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+@media (min-width: 900px) {
+  .flight-leg__row {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: center;
+  }
+}
+
+.flight-leg__schedule {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+  min-width: 0;
+}
+
+.flight-leg__endpoint {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.flight-leg__endpoint--arrive {
+  text-align: right;
+}
+
+.flight-leg__time {
+  font-size: var(--text-mono-data);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.flight-leg__code {
+  font-size: var(--text-body-sm);
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.flight-leg__connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 4rem;
+}
+
+.flight-leg__duration {
+  font-size: var(--text-caption);
+  color: var(--text-subtle);
+}
+
+.flight-leg__track {
+  display: block;
+  width: 100%;
+  position: relative;
+  height: 8px;
+}
+
+.flight-leg__track-line {
+  display: block;
+  height: 1px;
+  background: var(--separator);
+  position: relative;
+  top: 50%;
+}
+
+.flight-leg__track-line::before,
+.flight-leg__track-line::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-subtle);
+  transform: translateY(-50%);
+}
+
+.flight-leg__track-line::before {
+  left: 0;
+}
+
+.flight-leg__track-line::after {
+  right: 0;
+}
+
+.flight-leg__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.flight-leg__airline {
+  font-size: var(--text-body-sm);
+  color: var(--text-muted);
+}
+
+.flight-card__legs-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.flight-card__legs-stack .flight-leg + .flight-leg {
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--separator);
+}

@@ -34,6 +34,7 @@ export class InMemoryCache<T> {
   }
 }
 
-export function buildCacheKey(origin: string, destination: string, date: string): string {
-  return `${origin.toUpperCase()}|${destination.toUpperCase()}|${date}`;
+export function buildCacheKey(origin: string, destination: string, date: string, optionsKey = ""): string {
+  const base = `${origin.toUpperCase()}|${destination.toUpperCase()}|${date}`;
+  return optionsKey ? `${base}|${optionsKey}` : base;
 }

@@ -1,4 +1,5 @@
 import type { Itinerary } from "./flight";
+import type { TravelPreferences } from "./travelPreferences";
 
 /**
  * "live" -> the backend got the data from the real SerpApi call.
@@ -14,6 +15,7 @@ export interface FlightSearchResponse {
   itineraries: Itinerary[];
   source: DataSource;
   cached: boolean;
+  preferences: TravelPreferences;
   warning?: string;
 }
 
@@ -28,6 +30,22 @@ export interface PriceInsightsResponse {
   currency: string;
   typicalPriceRange: { low: number; high: number };
   history: PricePoint[];
+  source: DataSource;
+  warning?: string;
+}
+
+export interface NearbyDatePrice {
+  date: string;
+  lowestPrice: number | null;
+}
+
+export interface NearbyPricesResponse {
+  origin: string;
+  destination: string;
+  centerDate: string;
+  windowDays: number;
+  currency: string;
+  prices: NearbyDatePrice[];
   source: DataSource;
   warning?: string;
 }
